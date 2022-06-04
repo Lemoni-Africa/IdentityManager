@@ -20,6 +20,14 @@ class ValidateSelfieController extends Controller
     public function BvnSelfie(SelfieRequest $request)
     {
         try {
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
+            // Log::info('********** National Passport Verification from IdentityPass Service *************');
+            Log::info($request->all());
             $headers = [
                 'Content-Type' => 'application/json',
                 'Authorization' => env('AUTHKEY'),
@@ -47,20 +55,33 @@ class ValidateSelfieController extends Controller
             Log::info("Request Image => " . $selfie_image);
             Log::info("Response Image => " . $decodedJson['entity']['image']);
             if ($statusCode === 200) {
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Verification Successful",
-                    'data' => $decodedJson['entity']['selfie_verification']
+                $response['responseCode'] = '0';
+                $response['message'] = "Verification Successful";
+                $response['isSuccesful'] = true;
+                $response['data'] = $decodedJson['entity']['selfie_verification'];
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 200);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "Verification Successful",
+                //     'data' => $decodedJson['entity']['selfie_verification']
                     
-                ],200);
+                // ],200);
             }
-            return response([
-                'isSuccesful' => true,
-                'message' => "Verification Successful",
-                'data' => $decodedJson['entity']['selfie_verification']
+            $response['responseCode'] = '0';
+            $response['message'] = "Verification Successful";
+            $response['isSuccesful'] = true;
+            $response['data'] = $decodedJson['entity']['selfie_verification'];
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccesful' => true,
+            //     'message' => "Verification Successful",
+            //     'data' => $decodedJson['entity']['selfie_verification']
                 
-            ],200);
+            // ],200);
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',
@@ -76,6 +97,14 @@ class ValidateSelfieController extends Controller
     public function NinSelfie(SelfieRequest $request)
     {
         try {
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
+            // Log::info('********** National Passport Verification from IdentityPass Service *************');
+            Log::info($request->all());
             $headers = [
                 'Content-Type' => 'application/json',
                 'Authorization' => env('AUTHKEY'),
@@ -103,20 +132,33 @@ class ValidateSelfieController extends Controller
             Log::info("Request Image => " . $selfie_image);
             Log::info("Response Image => " . $decodedJson['entity']['picture']);
             if ($statusCode === 200) {
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Verification Successful",
-                    'data' => $decodedJson['entity']['selfie_verification']
+                $response['responseCode'] = '0';
+                $response['message'] = "Verification Successful";
+                $response['isSuccesful'] = true;
+                $response['data'] = $decodedJson['entity']['selfie_verification'];
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 200);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "Verification Successful",
+                //     'data' => $decodedJson['entity']['selfie_verification']
                     
-                ],200);
+                // ],200);
             }
-            return response([
-                'isSuccesful' => true,
-                'message' => "Verification Successful",
-                'data' => $decodedJson['entity']['selfie_verification']
+            $response['responseCode'] = '0';
+            $response['message'] = "Verification Successful";
+            $response['isSuccesful'] = true;
+            $response['data'] = $decodedJson['entity']['selfie_verification'];
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccesful' => true,
+            //     'message' => "Verification Successful",
+            //     'data' => $decodedJson['entity']['selfie_verification']
                 
-            ],200);
+            // ],200);
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',

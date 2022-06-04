@@ -28,32 +28,55 @@ class ValidateBvnController extends Controller
     public function store(BvnRequest $request)
     {
         try {
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
+            Log::info('********** BVN Verification from IdentityPass Service *************');
+            Log::info($request->all());
             $checker = $this->checkIfBvnExists($request->number);
         if(!empty($checker)){
             // compare text
             $isLastNameMatching = compareText($request->lastName, $checker['lastName']);
             $isFirstNameMatching = compareText($request->lastName, $checker['firstName']);
             if (!($isLastNameMatching || $isFirstNameMatching)) {
-
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Name doesn't Match",
-                    // 'data' => $decodedJson['bvn_data']
-                ]);
+                $response['responseCode'] = '1';
+                $response['message'] = "Name doesn't Match";
+                $response['isSuccesful'] = false;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 400);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "Name doesn't Match",
+                //     // 'data' => $decodedJson['bvn_data']
+                // ]);
             }
             //check dob
             if ($request->dob != $checker['dateOfBirth']) {
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Invalid Date of Birth",
-                ]);
+                $response['responseCode'] = '1';
+                $response['message'] = "Invalid Date of Birth";
+                $response['isSuccesful'] = false;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 400);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "Invalid Date of Birth",
+                // ]);
             }
-            return  response([
-                'isSuccesful' => true,
-                'message' => "Verification Successful",
-                'data' => new BvnResource($checker) 
+            $response['responseCode'] = '0';
+            $response['message'] = "Verification Successful";
+            $response['isSuccesful'] = true;
+            $response['data'] = new BvnResource($checker) ;
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return  response([
+            //     'isSuccesful' => true,
+            //     'message' => "Verification Successful",
+            //     'data' => new BvnResource($checker) 
                 
-            ], 200);
+            // ], 200);
         }
         $headers = [
             'Content-Type' => 'application/json',
@@ -81,33 +104,55 @@ class ValidateBvnController extends Controller
             $isLastNameMatching = compareText($lastName, $decodedJson['bvn_data']['lastName']);
             $isFirstNameMatching = compareText($lastName, $decodedJson['bvn_data']['firstName']);
             if (!($isLastNameMatching || $isFirstNameMatching)) {
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Name doesn't Match",
-                ]);
+                $response['responseCode'] = '1';
+                $response['message'] = "Name doesn't Match";
+                $response['isSuccesful'] = false;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 400);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "Name doesn't Match",
+                // ]);
             }
             //check dob
             if ($request->dob !== $decodedJson['bvn_data']['dateOfBirth']) {
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Invalid Date of Birth",
-                ]);
+                $response['responseCode'] = '1';
+                $response['message'] = "Invalid Date of Birth";
+                $response['isSuccesful'] = false;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 400);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "Invalid Date of Birth",
+                // ]);
             }
-     
-            return response([
-                'isSuccesful' => true,
-                'message' => $decodedJson['detail'],
-                'data' => new BvnResource($newBvn) 
-            ]);
+            $response['responseCode'] = '0';
+            $response['message'] = $decodedJson['detail'];
+            $response['isSuccesful'] = true;
+            $response['data'] = new BvnResource($newBvn) ;
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccesful' => true,
+            //     'message' => $decodedJson['detail'],
+            //     'data' => new BvnResource($newBvn) 
+            // ]);
         }
+        $response['responseCode'] = '0';
+        $response['message'] = $decodedJson['detail'];
+        $response['isSuccesful'] = true;
+        $response['data'] = $decodedJson['message'] ;
+        Log::info('response gotten ' .json_encode($response));
+        return response()->json($response, 200);
+        // return response([
+        //     'isSuccesful' => true,
+        //     'message' => $decodedJson['detail'],
+        //     'data' => $decodedJson['message']
         
-        return response([
-            'isSuccesful' => true,
-            'message' => $decodedJson['detail'],
-            'data' => $decodedJson['message']
-        
-        ], 200);
+        // ], 200);
+        // Log::info('response gotten ' .json_encode($response));
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',

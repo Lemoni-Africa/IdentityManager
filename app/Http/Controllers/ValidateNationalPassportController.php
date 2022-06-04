@@ -18,24 +18,44 @@ class ValidateNationalPassportController extends Controller
     public function store(NationalPassportRequest $request)
     {
         try {
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
+            Log::info('********** National Passport Verification from IdentityPass Service *************');
+            Log::info($request->all());
             $checker = $this->checkIfNationalPassportsExists($request->number);
             if(!empty($checker)){
                 //check expiry date 
                  $isExpired = checkExpiryDate($checker->expiry_date);
                 if ($isExpired) {
-                    return  response([
-                        'isSuccesful' => true,
-                        'message' => "Verification Successful",
-                        'data' => "License Expired at " . $checker->expiry_date
+                    $response['responseCode'] = '1';
+                    $response['message'] = "Verification Successful";
+                    $response['isSuccesful'] = false;
+                    $response['data'] = "License Expired at " . $checker->expiry_date;
+                    Log::info('response gotten ' .json_encode($response));
+                    return response()->json($response, 400);
+                    // return  response([
+                    //     'isSuccesful' => true,
+                    //     'message' => "Verification Successful",
+                    //     'data' => "License Expired at " . $checker->expiry_date
                     
-                    ], 200);
+                    // ], 200);
                 }
-                return  response([
-                    'isSuccesful' => true,
-                    'message' => "DL Verification Successful",
-                    'data' => $checker
+                $response['responseCode'] = '0';
+                $response['message'] = "DL Verification Successful";
+                $response['isSuccesful'] = true;
+                $response['data'] = $checker;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 200);
+                // return  response([
+                //     'isSuccesful' => true,
+                //     'message' => "DL Verification Successful",
+                //     'data' => $checker
                 
-                ], 200);
+                // ], 200);
             }
             $headers = [
                 'Content-Type' => 'application/json',
@@ -81,29 +101,48 @@ class ValidateNationalPassportController extends Controller
                 $isExpired = checkExpiryDate($newPassport->expiry_date);
                 if ($isExpired) {
                     $newPassport->save();
-                    return  response([
-                        'isSuccesful' => true,
-                        'message' => "DL Verification Successful",
-                        'data' => "License Expired at " . $newPassport->expiry_date
+                    $response['responseCode'] = '1';
+                    $response['message'] = "DL Verification Successful";
+                    $response['isSuccesful'] = true;
+                    $response['data'] = "License Expired at " . $newPassport->expiry_date;
+                    Log::info('response gotten ' .json_encode($response));
+                    return response()->json($response, 200);
+                    // return  response([
+                    //     'isSuccesful' => true,
+                    //     'message' => "DL Verification Successful",
+                    //     'data' => "License Expired at " . $newPassport->expiry_date
                     
-                    ], 200);
+                    // ], 200);
                 }
                 
                 $newPassport->save();
-                return response([
-                    'isSuccesful' => true,
-                    'message' => $decodedJson['detail'],
-                    'data' => $decodedJson['data']
-                ],200);
+                $response['responseCode'] = '1';
+                $response['message'] = $decodedJson['detail'];
+                $response['isSuccesful'] = true;
+                $response['data'] = $decodedJson['data'];
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 200);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => $decodedJson['detail'],
+                //     'data' => $decodedJson['data']
+                // ],200);
 
             }
-            return response([
-                'isSuccesful' => true,
-                'message' => $decodedJson['detail'],
-                'data' => $decodedJson['message']
+            $response['responseCode'] = '0';
+            $response['message'] = $decodedJson['detail'];
+            $response['isSuccesful'] = true;
+            $response['data'] = $decodedJson['message'];
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccesful' => true,
+            //     'message' => $decodedJson['detail'],
+            //     'data' => $decodedJson['message']
             
-            ], 200);
+            // ], 200);
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',

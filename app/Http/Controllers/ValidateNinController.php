@@ -18,14 +18,28 @@ class ValidateNinController extends Controller
     public function store(NinRequest $request)
     {
         try {
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
+            Log::info('********** NIN Verification from IdentityPass Service *************');
+            Log::info($request->all());
             $checker = $this->checkIfNinExists($request->number);
             if(!empty($checker)){
-                return  response([
-                    'isSuccesful' => true,
-                    'message' => "Verification Successful",
-                    'data' => $checker
+                $response['responseCode'] = '0';
+                $response['message'] = "Verification Successful";
+                $response['isSuccesful'] = true;
+                $response['data'] = $checker;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 200);
+                // return  response([
+                //     'isSuccesful' => true,
+                //     'message' => "Verification Successful",
+                //     'data' => $checker
                 
-                ], 200);
+                // ], 200);
             }
             $headers = [
                 'Content-Type' => 'application/json',
@@ -94,21 +108,32 @@ class ValidateNinController extends Controller
                 $newNin->trackingId = $decodedJson['nin_data']['trackingId'];
     
                 $newNin->save();
-        
-                return response([
-                    'isSuccesful' => true,
-                    'message' => $decodedJson['detail'],
-                    'data' => $decodedJson['nin_data']
-                ],200);
+                $response['responseCode'] = '0';
+                $response['message'] = $decodedJson['detail'];
+                $response['isSuccesful'] = true;
+                $response['data'] = $decodedJson['nin_data'];
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 200);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => $decodedJson['detail'],
+                //     'data' => $decodedJson['nin_data']
+                // ],200);
             }
-    
-            return response([
-                'isSuccesful' => true,
-                'message' => $decodedJson['detail'],
-                'data' => $decodedJson['message']
+            $response['responseCode'] = '0';
+            $response['message'] = $decodedJson['detail'];
+            $response['isSuccesful'] = true;
+            $response['data'] = $decodedJson['message'];
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccesful' => true,
+            //     'message' => $decodedJson['detail'],
+            //     'data' => $decodedJson['message']
             
-            ], 200);
+            // ], 200);
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',

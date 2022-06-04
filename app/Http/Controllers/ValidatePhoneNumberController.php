@@ -20,14 +20,28 @@ class ValidatePhoneNumberController extends Controller
     public function store(PhoneNumberRequest $request)
     {
         try {
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
+            Log::info('********** Phone Number Verification from IdentityPass Service *************');
+            Log::info($request->all());
             $checker = $this->checkIfPhoneExists($request->number);
         if(!empty($checker)){
-            return  response([
-                'isSuccesful' => true,
-                'message' => "Verification Successful",
-                'data' => $checker
+            $response['responseCode'] = '0';
+            $response['message'] = "Verification Successful";
+            $response['isSuccesful'] = true;
+            $response['data'] = $checker;
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return  response([
+            //     'isSuccesful' => true,
+            //     'message' => "Verification Successful",
+            //     'data' => $checker
             
-            ], 200);
+            // ], 200);
         }
         $headers = [
             'Content-Type' => 'application/json',
@@ -104,21 +118,32 @@ class ValidatePhoneNumberController extends Controller
             $newPhoneNumber->save();
 
   
-
-            return response([
-                'isSuccesful' => true,
-                'message' => $decodedJson['detail'],
-                'data' => $decodedJson['data']
-            ],200);
+            $response['responseCode'] = '0';
+            $response['message'] = $decodedJson['detail'];
+            $response['isSuccesful'] = true;
+            $response['data'] = $decodedJson['data'];
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccesful' => true,
+            //     'message' => $decodedJson['detail'],
+            //     'data' => $decodedJson['data']
+            // ],200);
         }
+        $response['responseCode'] = '0';
+        $response['message'] = $decodedJson['detail'];
+        $response['isSuccesful'] = true;
+        $response['data'] = $decodedJson['message'];
+        Log::info('response gotten ' .json_encode($response));
+        return response()->json($response, 200);
+        // return response([
+        //     'isSuccesful' => true,
+        //     'message' => $decodedJson['detail'],
+        //     'data' => $decodedJson['message']
         
-        return response([
-            'isSuccesful' => true,
-            'message' => $decodedJson['detail'],
-            'data' => $decodedJson['message']
-        
-        ], 200);
+        // ], 200);
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',
@@ -134,24 +159,43 @@ class ValidatePhoneNumberController extends Controller
     public function number(PhoneNumberLastNameRequest $request)
     {
         try {
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
+            Log::info('********** Phone Number Verification from IdentityPass Service *************');
+            Log::info($request->all());
             $checker = $this->checkIfPhoneExists($request->number);
         if(!empty($checker)){
             $isLastNameMatching = compareText($request->lastName, $checker['surname']);
             $isFirstNameMatching = compareText($request->lastName, $checker['firstname']);
             if (!($isLastNameMatching || $isFirstNameMatching)) {
-
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Name doesn't Match",
-                    // 'data' => $decodedJson['bvn_data']
-                ]);
+                $response['responseCode'] = '1';
+                $response['message'] = "Name doesn't Match";
+                $response['isSuccesful'] = false;
+                // $response['data'] = $checker;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 400);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "Name doesn't Match",
+                //     // 'data' => $decodedJson['bvn_data']
+                // ]);
             }
-            return  response([
-                'isSuccesful' => true,
-                'message' => "Verification Successful",
-                'data' => $checker
+            $response['responseCode'] = '0';
+            $response['message'] = "Verification Successful";
+            $response['isSuccesful'] = true;
+            $response['data'] = $checker;
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 400);
+            // return  response([
+            //     'isSuccesful' => true,
+            //     'message' => "Verification Successful",
+            //     'data' => $checker
             
-            ], 200);
+            // ], 200);
         }
         $headers = [
             'Content-Type' => 'application/json',
@@ -178,26 +222,44 @@ class ValidatePhoneNumberController extends Controller
             $isLastNameMatching = compareText($lastName, $decodedJson['data']['surname']);
             $isFirstNameMatching = compareText($lastName, $decodedJson['data']['firstname']);
             if (!($isLastNameMatching || $isFirstNameMatching)) {
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Name doesn't Match",
-                ]);
+                $response['responseCode'] = '1';
+                $response['message'] = "Name doesn't Match";
+                $response['isSuccesful'] = false;
+                // $response['data'] = $checker;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 400);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "",
+                // ]);
             }
-            return response([
-                'isSuccesful' => true,
-                'message' => $decodedJson['detail'],
-                'data' => $decodedJson['data']
-            ],200);
+            $response['responseCode'] = '0';
+            $response['message'] = $decodedJson['detail'];
+            $response['isSuccesful'] = true;
+            $response['data'] = $decodedJson['data'];
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccesful' => true,
+            //     'message' => $decodedJson['detail'],
+            //     'data' => $decodedJson['data']
+            // ],200);
         }
+        $response['responseCode'] = '0';
+        $response['message'] = $decodedJson['detail'];
+        $response['isSuccesful'] = false;
+        $response['data'] = $decodedJson['message'];
+        Log::info('response gotten ' .json_encode($response));
+        return response()->json($response, 200);
+        // return response([
+        //     'isSuccesful' => true,
+        //     'message' => $decodedJson['detail'],
+        //     'data' => $decodedJson['message']
         
-        return response([
-            'isSuccesful' => true,
-            'message' => $decodedJson['detail'],
-            'data' => $decodedJson['message']
-        
-        ], 200);
+        // ], 200);
 
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',

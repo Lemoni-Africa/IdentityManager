@@ -36,34 +36,59 @@ class ValidateCardsController extends Controller
         switch ($request->type) {
             case "DRIVLICE":
                 try {
+                    $response = [
+                        'isSuccesful' =>  false,
+                        'responseCode' => null,
+                        'data'=> null,
+                        'message' => null,
+                    ];
+                    Log::info('********** Drivers License Verification from IdentityPass Service *************');
+                    Log::info($request->all());
                     $checker = $this->checkIfLicenseExists($request->number);
                     if(!empty($checker)){
                         //check expiry date 
                         $isExpired = checkExpiryDate($checker->expiryDate);
                         if ($isExpired) {
-                            return  response([
-                                'isSuccesful' => true,
-                                'message' => "DL Verification Successful",
-                                'data' => "License Expired at " . $checker->expiryDate
+                            $response['responseCode'] = '1';
+                            $response['message'] = "DL Verification Successful";
+                            $response['isSuccesful'] = false;
+                            $response['data'] = "License Expired at " . $checker->expiryDate;
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 400);
+                            // return  response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "DL Verification Successful",
+                            //     'data' => "License Expired at " . $checker->expiryDate
                             
-                            ], 200);
+                            // ], 200);
                         }
                         $isLastNameMatching = compareText($request->lastName, $checker['lastName']);
                         $isFirstNameMatching = compareText($request->lastName, $checker['firstName']);
                         if (!($isLastNameMatching || $isFirstNameMatching)) {
-                            return response([
-                                'isSuccesful' => true,
-                                'message' => "Name doesn't Match",
-                                // 'data' => $decodedJson['bvn_data']
-                            ]);
+                            $response['responseCode'] = '1';
+                            $response['message'] =  "Name doesn't Match";
+                            $response['isSuccesful'] = false;
+                            // $response['data'] = $decodedJson['bvn_data'];
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 400);
+                            // return response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Name doesn't Match",
+                            //     // 'data' => $decodedJson['bvn_data']
+                            // ]);
                         }
+                        $response['responseCode'] = '0';
+                        $response['message'] =   "DL Verification Successful";
+                        $response['isSuccesful'] = true;
+                        $response['data'] = new DriversLicenseResource($checker);
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 200);
+                        // return  response([
+                        //     'isSuccesful' => true,
+                        //     'message' => "DL Verification Successful",
+                        //     'data' => new DriversLicenseResource($checker) 
                         
-                        return  response([
-                            'isSuccesful' => true,
-                            'message' => "DL Verification Successful",
-                            'data' => new DriversLicenseResource($checker) 
-                        
-                        ], 200);
+                        // ], 200);
                     }
                     $headers = [
                         'Content-Type' => 'application/json',
@@ -90,37 +115,61 @@ class ValidateCardsController extends Controller
                     $newDriversLicense = saveDriversLicence($decodedJson);
                     $isExpired = checkExpiryDate($decodedJson['data']['expiryDate']);
                     if ($isExpired) {
-                        return  response([
-                            'isSuccesful' => true,
-                            'message' => "DL Verification Successful",
-                            'data' => "License Expired at " . $decodedJson['data']['expiryDate']
+                        $response['responseCode'] = '1';
+                        $response['message'] =   "DL Verification Successful";
+                        $response['isSuccesful'] = false;
+                        $response['data'] = "License Expired at " . $decodedJson['data']['expiryDate'];
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 400);
+
+                        // return  response([
+                        //     'isSuccesful' => true,
+                        //     'message' => "DL Verification Successful",
+                        //     'data' => "License Expired at " . $decodedJson['data']['expiryDate']
                         
-                        ], 200);
+                        // ], 200);
                     }
                     $isLastNameMatching = compareText($request->lastName, $decodedJson['data']['lastName']);
                     $isFirstNameMatching = compareText($request->lastName, $decodedJson['data']['firstName']);
                     if (!($isLastNameMatching || $isFirstNameMatching)) {
-    
-                        return response([
-                            'isSuccesful' => true,
-                            'message' => "Name doesn't Match",
-                            // 'data' => $decodedJson['bvn_data']
-                        ]);
+                        $response['responseCode'] = '1';
+                        $response['message'] =  "Name doesn't Match";
+                        $response['isSuccesful'] = false;
+                        // $response['data'] = "License Expired at " . $decodedJson['data']['expiryDate'];
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 400);
+                        // return response([
+                        //     'isSuccesful' => true,
+                        //     'message' => "Name doesn't Match",
+                        //     // 'data' => $decodedJson['bvn_data']
+                        // ]);
                     }
-                    
-                    return response([
-                        'isSuccesful' => true,
-                        'message' => $decodedJson['detail'],
-                        'data' => new DriversLicenseResource($newDriversLicense) 
-                    ],200);
+                    $response['responseCode'] = '0';
+                    $response['message'] =  $decodedJson['detail'];
+                    $response['isSuccesful'] = true;
+                    $response['data'] = new DriversLicenseResource($newDriversLicense) ;
+                    Log::info('response gotten ' .json_encode($response));
+                    return response()->json($response, 200);
+                    // return response([
+                    //     'isSuccesful' => true,
+                    //     'message' => $decodedJson['detail'],
+                    //     'data' => new DriversLicenseResource($newDriversLicense) 
+                    // ],200);
                 }
-                    return response([
-                        'isSuccesful' => true,
-                        'message' => $decodedJson['detail'],
-                        'data' => $decodedJson['message']
+                    $response['responseCode'] = '0';
+                    $response['message'] =  $decodedJson['detail'];
+                    $response['isSuccesful'] = true;
+                    $response['data'] = $decodedJson['message'];
+                    Log::info('response gotten ' .json_encode($response));
+                    return response()->json($response, 400);
+                    // return response([
+                    //     'isSuccesful' => true,
+                    //     'message' => $decodedJson['detail'],
+                    //     'data' => $decodedJson['message']
                     
-                    ], 200);
+                    // ], 200);
                 } catch (\Exception $e) {
+                    Log::info(json_encode($e));
                     return response([
                         'isSuccesful' => false,
                         'message' => 'Processing Failed, Contact Support',
@@ -133,23 +182,43 @@ class ValidateCardsController extends Controller
             break;
             case "VTRCARD":
                 try {
+                    $response = [
+                        'isSuccesful' =>  false,
+                        'responseCode' => null,
+                        'data'=> null,
+                        'message' => null,
+                    ];
+                    Log::info('********** Voters Card Verification from IdentityPass Service *************');
+                    Log::info($request->all());
                     $checker = $this->checkIfVotersCardExists($request->number);
                     if(!empty($checker)){
                         $isLastNameMatching = compareText($request->last_name, $checker['last_name']);
                         $isFirstNameMatching = compareText($request->last_name, $checker['first_name']);
                         if (!($isLastNameMatching || $isFirstNameMatching)) {
-                            return response([
-                                'isSuccesful' => true,
-                                'message' => "Name doesn't Match",
-                                // 'data' => $decodedJson['bvn_data']
-                            ]);
+                            $response['responseCode'] = '1';
+                            $response['message'] =  "Name doesn't Match";
+                            $response['isSuccesful'] = false;
+                            // $response['data'] = $decodedJson['bvn_data'];
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 400);
+                            // return response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Name doesn't Match",
+                            //     // 'data' => $decodedJson['bvn_data']
+                            // ]);
                         }
-                        return  response([
-                            'isSuccesful' => true,
-                            'message' => "VIN Verification Successful",
-                            'data' => new VotersCardResource($checker)
+                        $response['responseCode'] = '0';
+                        $response['message'] = "VIN Verification Successful";
+                        $response['isSuccesful'] = true;
+                        $response['data'] = new VotersCardResource($checker);
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 200);
+                        // return  response([
+                        //     'isSuccesful' => true,
+                        //     'message' => "VIN Verification Successful",
+                        //     'data' => new VotersCardResource($checker)
                         
-                        ], 200);
+                        // ], 200);
                     }
                     $headers = [
                         'Content-Type' => 'application/json',
@@ -178,26 +247,44 @@ class ValidateCardsController extends Controller
                         $isLastNameMatching = compareText($request->last_name, $checker['last_name']);
                         $isFirstNameMatching = compareText($request->last_name, $checker['first_name']);
                         if (!($isLastNameMatching || $isFirstNameMatching)) {
-                            return response([
-                                'isSuccesful' => true,
-                                'message' => "Name doesn't Match",
-                                // 'data' => $decodedJson['bvn_data']
-                            ]);
+                            $response['responseCode'] = '1';
+                            $response['message'] =  "Name doesn't Match";
+                            $response['isSuccesful'] = false;
+                            // $response['data'] = $decodedJson['bvn_data'];
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 400);
+                            // return response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Name doesn't Match",
+                            //     // 'data' => $decodedJson['bvn_data']
+                            // ]);
                         }
-                        return response([
-                            'isSuccesful' => true,
-                            'message' => $decodedJson['detail'],
-                            'data' => new VotersCardResource($newVotersCard)
-                        ],200);
+                        $response['responseCode'] = '0';
+                        $response['message'] = $decodedJson['detail'];
+                        $response['isSuccesful'] = true;
+                        $response['data'] = new VotersCardResource($newVotersCard);
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 200);
+                        // return response([
+                        //     'isSuccesful' => true,
+                        //     'message' => $decodedJson['detail'],
+                        //     'data' => new VotersCardResource($newVotersCard)
+                        // ],200);
                     }
-            
-                    return response([
-                        'isSuccesful' => true,
-                        'message' => $decodedJson['detail'],
-                        'data' => $decodedJson['message']
+                    $response['responseCode'] = '0';
+                    $response['message'] =  $decodedJson['detail'];
+                    $response['isSuccesful'] = true;
+                    $response['data'] = $decodedJson['message'];
+                    Log::info('response gotten ' .json_encode($response));
+                    return response()->json($response, 400);
+                    // return response([
+                    //     'isSuccesful' => true,
+                    //     'message' => $decodedJson['detail'],
+                    //     'data' => $decodedJson['message']
                     
-                    ], 200);
+                    // ], 200);
                 } catch (\Exception $e) {
+                    Log::info(json_encode($e));
                     return response([
                         'isSuccesful' => false,
                         'message' => 'Processing Failed, Contact Support',
@@ -209,24 +296,48 @@ class ValidateCardsController extends Controller
             break;
             case "NIN":
                 try {
+                    $response = [
+                        'isSuccesful' =>  false,
+                        'responseCode' => null,
+                        'data'=> null,
+                        'message' => null,
+                    ];
+                    Log::info('********** NIN Verification from IdentityPass Service *************');
+                    Log::info($request->all());
                     $checker = $this->checkIfNinExists($request->number);
                     if(!empty($checker)){
                         $isLastNameMatching = compareText($request->last_name, $checker['surname']);
                         $isFirstNameMatching = compareText($request->last_name, $checker['firstname']);
                         if (!($isLastNameMatching || $isFirstNameMatching)) {
-
-                            return response([
-                                'isSuccesful' => true,
-                                'message' => "Name doesn't Match",
-                                // 'data' => $decodedJson['bvn_data']
-                            ]);
+                            $response['responseCode'] = '1';
+                            $response['message'] =  "Name doesn't Match";
+                            $response['isSuccesful'] = false;
+                            // $response['data'] = $decodedJson['bvn_data'];
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 400);
+                            // return response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Name doesn't Match",
+                            //     // 'data' => $decodedJson['bvn_data']
+                            // ]);
+                            // return response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Name doesn't Match",
+                            //     // 'data' => $decodedJson['bvn_data']
+                            // ]);
                         }
-                        return  response([
-                            'isSuccesful' => true,
-                            'message' => "Verification Successful",
-                            'data' => new NINResource($checker)
+                        $response['responseCode'] = '0';
+                        $response['message'] = "Verification Successful";
+                        $response['isSuccesful'] = true;
+                        $response['data'] = new NINResource($checker);
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 200);
+                        // return  response([
+                        //     'isSuccesful' => true,
+                        //     'message' => "Verification Successful",
+                        //     'data' => new NINResource($checker)
                         
-                        ], 200);
+                        // ], 200);
                     }
                     $headers = [
                         'Content-Type' => 'application/json',
@@ -255,25 +366,43 @@ class ValidateCardsController extends Controller
                         $isLastNameMatching = compareText($last_name, $decodedJson['nin_data']['surname']);
                         $isFirstNameMatching = compareText($last_name, $decodedJson['nin_data']['firstname']);
                         if (!($isLastNameMatching || $isFirstNameMatching)) {
-                            return response([
-                                'isSuccesful' => true,
-                                'message' => "Name doesn't Match",
-                            ]);
+                            $response['responseCode'] = '1';
+                            $response['message'] =  "Name doesn't Match";
+                            $response['isSuccesful'] = false;
+                            // $response['data'] = $decodedJson['bvn_data'];
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 400);
+                            // return response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Name doesn't Match",
+                            // ]);
                         }
-                        return response([
-                            'isSuccesful' => true,
-                            'message' => $decodedJson['detail'],
-                            'data' => new NINResource($newNIN)
-                        ],200);
+                        $response['responseCode'] = '0';
+                        $response['message'] = $decodedJson['detail'];
+                        $response['isSuccesful'] = true;
+                        $response['data'] = new NINResource($newNIN);
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 200);
+                        // return response([
+                        //     'isSuccesful' => true,
+                        //     'message' => $decodedJson['detail'],
+                        //     'data' => new NINResource($newNIN)
+                        // ],200);
                     }
-            
-                    return response([
-                        'isSuccesful' => true,
-                        'message' => $decodedJson['detail'],
-                        'data' => $decodedJson['message']
+                    $response['responseCode'] = '1';
+                    $response['message'] = $decodedJson['detail'];
+                    $response['isSuccesful'] = true;
+                    $response['data'] = $decodedJson['message'];
+                    Log::info('response gotten ' .json_encode($response));
+                    return response()->json($response, 200);
+                    // return response([
+                    //     'isSuccesful' => true,
+                    //     'message' => $decodedJson['detail'],
+                    //     'data' => $decodedJson['message']
                     
-                    ], 200);
+                    // ], 200);
                 } catch (\Exception $e) {
+                    Log::info(json_encode($e));
                     return response([
                         'isSuccesful' => false,
                         'message' => 'Processing Failed, Contact Support',
@@ -283,28 +412,59 @@ class ValidateCardsController extends Controller
             break;
             case "PASSPORT":
                 try {
+                    $response = [
+                        'isSuccesful' =>  false,
+                        'responseCode' => null,
+                        'data'=> null,
+                        'message' => null,
+                    ];
+                    Log::info('********** National Passport Verification from IdentityPass Service *************');
+                    Log::info($request->all());
                     $checker = $this->checkIfNationalPassportsExists($request->number);
                     if(!empty($checker)){
                         //check expiry date 
                          $isExpired = checkExpiryDate($checker->expiry_date);
                         if ($isExpired) {
-                            return  response([
-                                'isSuccesful' => true,
-                                'message' => "Verification Successful",
-                                'data' => "License Expired at " . $checker->expiry_date
+                            $response['responseCode'] = '1';
+                            $response['message'] = "Verification Successful";
+                            $response['isSuccesful'] = false;
+                            $response['data'] = "License Expired at " . $checker->expiry_date;
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 400);
+                            // return  response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Verification Successful",
+                            //     'data' => "License Expired at " . $checker->expiry_date
                             
-                            ], 200);
+                            // ], 200);
+                            // return  response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Verification Successful",
+                            //     'data' => "License Expired at " . $checker->expiry_date
+                            
+                            // ], 200);
                         }
                         $isLastNameMatching = compareText($request->last_name, $checker['last_name']);
                         $isFirstNameMatching = compareText($request->last_name, $checker['first_name']);
                         if (!($isLastNameMatching || $isFirstNameMatching)) {
-            
-                            return response([
-                                'isSuccesful' => true,
-                                'message' => "Name doesn't Match",
-                                // 'data' => $decodedJson['bvn_data']
-                            ]);
+                            $response['responseCode'] = '1';
+                            $response['message'] =  "Name doesn't Match";
+                            $response['isSuccesful'] = false;
+                            // $response['data'] = $decodedJson['bvn_data'];
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 400);
+                            // return response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "Name doesn't Match",
+                            //     // 'data' => $decodedJson['bvn_data']
+                            // ]);
                         }
+                        $response['responseCode'] = '0';
+                        $response['message'] =  "DL Verification Successful";
+                        $response['isSuccesful'] = false;
+                        $response['data'] = new NationalPassportResource($checker);
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 200);
                         return  response([
                             'isSuccesful' => true,
                             'message' => "DL Verification Successful",
@@ -354,29 +514,58 @@ class ValidateCardsController extends Controller
                         $newPassport->save();
                         $isExpired = checkExpiryDate($newPassport->expiry_date);
                         if ($isExpired) {
+                            $response['responseCode'] = '1';
+                            $response['message'] = "DL Verification Successful";
+                            $response['isSuccesful'] = true;
+                            $response['data'] = "License Expired at " . $newPassport->expiry_date;
+                            Log::info('response gotten ' .json_encode($response));
+                            return response()->json($response, 200);
+                            // return  response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "DL Verification Successful",
+                            //     'data' => "License Expired at " . $newPassport->expiry_date
                             
-                            return  response([
-                                'isSuccesful' => true,
-                                'message' => "DL Verification Successful",
-                                'data' => "License Expired at " . $newPassport->expiry_date
+                            // ], 200);
+                            // return  response([
+                            //     'isSuccesful' => true,
+                            //     'message' => "DL Verification Successful",
+                            //     'data' => "License Expired at " . $newPassport->expiry_date
                             
-                            ], 200);
+                            // ], 200);
                         }
-                        
-                        return response([
-                            'isSuccesful' => true,
-                            'message' => $decodedJson['detail'],
-                            'data' => new NationalPassportResource($newPassport)
-                        ],200);
+                        $response['responseCode'] = '0';
+                        $response['message'] = $decodedJson['detail'];
+                        $response['isSuccesful'] = true;
+                        $response['data'] = new NationalPassportResource($newPassport);
+                        Log::info('response gotten ' .json_encode($response));
+                        return response()->json($response, 200);
+                        // return response([
+                        //     'isSuccesful' => true,
+                        //     'message' => $decodedJson['detail'],
+                        //     'data' => new NationalPassportResource($newPassport)
+                        // ],200);
         
                     }
-                    return response([
-                        'isSuccesful' => true,
-                        'message' => $decodedJson['detail'],
-                        'data' => $decodedJson['message']
+                    $response['responseCode'] = '1';
+                    $response['message'] = $decodedJson['detail'];
+                    $response['isSuccesful'] = true;
+                    $response['data'] = $decodedJson['message'];
+                    Log::info('response gotten ' .json_encode($response));
+                    return response()->json($response, 200);
+                    // return response([
+                    //     'isSuccesful' => true,
+                    //     'message' => $decodedJson['detail'],
+                    //     'data' => $decodedJson['message']
                     
-                    ], 200);
+                    // ], 200);
+                    // return response([
+                    //     'isSuccesful' => true,
+                    //     'message' => $decodedJson['detail'],
+                    //     'data' => $decodedJson['message']
+                    
+                    // ], 200);
                 } catch (\Exception $e) {
+                    Log::info(json_encode($e));
                     return response([
                         'isSuccesful' => false,
                         'message' => 'Processing Failed, Contact Support',

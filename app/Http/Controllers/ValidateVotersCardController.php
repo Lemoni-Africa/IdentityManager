@@ -18,15 +18,29 @@ class ValidateVotersCardController extends Controller
     public function store(VotersCardRequest $request)
     {
         try {
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
+            Log::info('********** Voters Card Verification from IdentityPass Service *************');
+            Log::info($request->all());
             $checker = $this->checkIfVotersCardExists($request->number);
             if(!empty($checker)){
                 // Log::info('datbase');
-                return  response([
-                    'isSuccesful' => true,
-                    'message' => "VIN Verification Successful",
-                    'data' => $checker
+                $response['responseCode'] = '0';
+                $response['message'] = "VIN Verification Successful";
+                $response['isSuccesful'] = true;
+                $response['data'] = $checker;
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 200);
+                // return  response([
+                //     'isSuccesful' => true,
+                //     'message' => "VIN Verification Successful",
+                //     'data' => $checker
                 
-                ], 200);
+                // ], 200);
             }
 
         $headers = [
@@ -69,21 +83,32 @@ class ValidateVotersCardController extends Controller
             $newVotersCard->pollingUnitCode = $decodedJson['vc_data']['pollingUnitCode'];
 
             $newVotersCard->save();
-
-            return response([
-                'isSuccesful' => true,
-                'message' => $decodedJson['detail'],
-                'data' => $decodedJson['vc_data']
-            ],200);
+            $response['responseCode'] = '0';
+            $response['message'] = $decodedJson['detail'];
+            $response['isSuccesful'] = true;
+            $response['data'] = $decodedJson['vc_data'];
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccesful' => true,
+            //     'message' => $decodedJson['detail'],
+            //     'data' => $decodedJson['vc_data']
+            // ],200);
         }
-
-        return response([
-            'isSuccesful' => true,
-            'message' => $decodedJson['detail'],
-            'data' => $decodedJson['message']
+        $response['responseCode'] = '0';
+        $response['message'] = $decodedJson['detail'];
+        $response['isSuccesful'] = true;
+        $response['data'] = $decodedJson['message'];
+        Log::info('response gotten ' .json_encode($response));
+        return response()->json($response, 200);
+        // return response([
+        //     'isSuccesful' => true,
+        //     'message' => $decodedJson['detail'],
+        //     'data' => $decodedJson['message']
         
-        ], 200);
+        // ], 200);
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',
