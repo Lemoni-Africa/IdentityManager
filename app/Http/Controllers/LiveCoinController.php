@@ -45,13 +45,20 @@ class LiveCoinController extends Controller
                 array_push($coins,$data);
             }
             // Log::info($encodedJson);
-            return response([
-                'isSuccessful' => true,
-                'message' => 'Successful',
-                'data' => $coins
-            ],200);
+            $response['responseCode'] = '0';
+            $response['message'] = 'Successful';
+            $response['isSuccesful'] = true;
+            $response['data'] = $coins;
+            Log::info('response gotten ' .json_encode($response));
+            return response()->json($response, 200);
+            // return response([
+            //     'isSuccessful' => true,
+            //     'message' => 'Successful',
+            //     'data' => $coins
+            // ],200);
 
         } catch (\Exception $e) {
+            Log::info(json_encode($e));
             return response([
                 'isSuccessful' => false,
                 'message' => 'Processing Failed, Contact Support',

@@ -91,14 +91,14 @@ class ValidateBvnController extends Controller
         $lastName = $request->lastName;
         $dob = $request->dob;
 
-        $response = $client->request('POST', $url, [
+        $response2 = $client->request('POST', $url, [
             'form_params' => [
                 'number' => $number,
                 'lastName' => $lastName,
                 'dob' => $dob
             ]
         ]);
-        $decodedJson = json_decode($response->getBody(), TRUE);
+        $decodedJson = json_decode($response2->getBody(), TRUE);
         if ($decodedJson['response_code'] === "00") {
             $newBvn = saveBvn($decodedJson);
             $isLastNameMatching = compareText($lastName, $decodedJson['bvn_data']['lastName']);

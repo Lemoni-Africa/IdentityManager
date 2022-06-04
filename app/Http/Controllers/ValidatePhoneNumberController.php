@@ -55,12 +55,12 @@ class ValidatePhoneNumberController extends Controller
 
         $body = $request->number;
 
-        $response = $client->request('POST', $url, [
+        $response2 = $client->request('POST', $url, [
             'form_params' => [
                 'number' => $body
             ]
         ]);
-        $decodedJson = json_decode($response->getBody(), TRUE);
+        $decodedJson = json_decode($response2->getBody(), TRUE);
         if ($decodedJson['response_code'] === "00") {
 
             $newPhoneNumber = new PhoneNumber;
@@ -210,13 +210,13 @@ class ValidatePhoneNumberController extends Controller
         $number = $request->number;
         $lastName = $request->lastName;
 
-        $response = $client->request('POST', $url, [
+        $response2 = $client->request('POST', $url, [
             'form_params' => [
                 'number' => $number,
                 'lastName' => $lastName
             ]
         ]);
-        $decodedJson = json_decode($response->getBody(), TRUE);
+        $decodedJson = json_decode($response2->getBody(), TRUE);
         if ($decodedJson['response_code'] === "00") {
             savePhoneNumber($decodedJson);
             $isLastNameMatching = compareText($lastName, $decodedJson['data']['surname']);

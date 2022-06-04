@@ -70,7 +70,7 @@ class ValidateDriversLicenseController extends Controller
             $dob = $request->dob;
            
     
-            $response = $client->request('POST', $url, [
+            $response2 = $client->request('POST', $url, [
                 'form_params' => [
                     'number' => $number,
                     'dob' => $dob,
@@ -78,7 +78,7 @@ class ValidateDriversLicenseController extends Controller
                 ]
             ]);
     
-            $decodedJson = json_decode($response->getBody(), TRUE);
+            $decodedJson = json_decode($response2->getBody(), TRUE);
             if ($decodedJson['response_code'] === "00") {
                 $newLicense = new DriversLicense;
                 $newLicense->gender = $decodedJson['data']['gender'];

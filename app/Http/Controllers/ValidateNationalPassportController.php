@@ -71,7 +71,7 @@ class ValidateNationalPassportController extends Controller
             $first_name = $request->first_name;
             $last_name = $request->last_name;
     
-            $response = $client->request('POST', $url, [
+            $response2 = $client->request('POST', $url, [
                 'form_params' => [
                     'number' => $number,
                     'dob' => $dob,
@@ -79,7 +79,7 @@ class ValidateNationalPassportController extends Controller
                     'last_name' => $last_name
                 ]
             ]);
-            $decodedJson = json_decode($response->getBody(), TRUE);
+            $decodedJson = json_decode($response2->getBody(), TRUE);
             // Log::info($decodedJson);
             if ($decodedJson['response_code'] === "00") {
                 $newPassport = new NationalPassport;

@@ -103,14 +103,14 @@ class ValidateCardsController extends Controller
                     $dob = $request->dob;
                     $lastName = $request->lastName;
     
-                    $response = $client->request('POST', $url, [
+                    $response2 = $client->request('POST', $url, [
                         'form_params' => [
                             'number' => $number,
                             'dob' => $dob,
                             'lastName' => $lastName
                         ]
                     ]);
-                    $decodedJson = json_decode($response->getBody(), TRUE);
+                    $decodedJson = json_decode($response2->getBody(), TRUE);
                 if ($decodedJson['response_code'] === "00") {
                     $newDriversLicense = saveDriversLicence($decodedJson);
                     $isExpired = checkExpiryDate($decodedJson['data']['expiryDate']);
@@ -233,7 +233,7 @@ class ValidateCardsController extends Controller
                     $last_name = $request->last_name;
                     $state = $request->state;
             
-                    $response = $client->request('POST', $url, [
+                    $response2 = $client->request('POST', $url, [
                         'form_params' => [
                             'number' => $number,
                             'last_name' => $last_name,
@@ -241,7 +241,7 @@ class ValidateCardsController extends Controller
                         ]
                     ]);
             
-                    $decodedJson = json_decode($response->getBody(), TRUE);
+                    $decodedJson = json_decode($response2->getBody(), TRUE);
                     if ($decodedJson['response_code'] === "00") {
                         $newVotersCard = saveVotersCard($decodedJson);
                         $isLastNameMatching = compareText($request->last_name, $checker['last_name']);
@@ -351,14 +351,14 @@ class ValidateCardsController extends Controller
                     $number = $request->number;
                     $last_name = $request->last_name;
             
-                    $response = $client->request('POST', $url, [
+                    $response2 = $client->request('POST', $url, [
                         'form_params' => [
                             'number' => $number,
                             'last_name' => $last_name
                         ]
                     ]);
             
-                    $decodedJson = json_decode($response->getBody(), TRUE);
+                    $decodedJson = json_decode($response2->getBody(), TRUE);
                     // Log::info($decodedJson);
                     Log::info($decodedJson);
                     if ($decodedJson['response_code'] === "00") {
@@ -486,7 +486,7 @@ class ValidateCardsController extends Controller
                     $first_name = $request->first_name;
                     $last_name = $request->last_name;
             
-                    $response = $client->request('POST', $url, [
+                    $response2 = $client->request('POST', $url, [
                         'form_params' => [
                             'number' => $number,
                             'dob' => $dob,
@@ -494,7 +494,7 @@ class ValidateCardsController extends Controller
                             'last_name' => $last_name
                         ]
                     ]);
-                    $decodedJson = json_decode($response->getBody(), TRUE);
+                    $decodedJson = json_decode($response2->getBody(), TRUE);
                     if ($decodedJson['response_code'] === "00") {
                         $newPassport = new NationalPassport;
                         $newPassport->first_name = $decodedJson['data']['first_name'];

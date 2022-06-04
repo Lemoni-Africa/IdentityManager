@@ -52,13 +52,13 @@ class ValidateNinController extends Controller
     
             $number = $request->number;
     
-            $response = $client->request('POST', $url, [
+            $response2 = $client->request('POST', $url, [
                 'form_params' => [
                     'number' => $number,
                 ]
             ]);
     
-            $decodedJson = json_decode($response->getBody(), TRUE);
+            $decodedJson = json_decode($response2->getBody(), TRUE);
             // Log::info($decodedJson);
     
             if ($decodedJson['response_code'] === "00") {

@@ -20,7 +20,12 @@ class ValidateSelfieController extends Controller
     public function BvnSelfie(SelfieRequest $request)
     {
         try {
-          
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
             // Log::info('********** National Passport Verification from IdentityPass Service *************');
             Log::info($request->all());
             $headers = [
@@ -37,25 +42,20 @@ class ValidateSelfieController extends Controller
             $url = "{$this->baseUrl2}/api/v1/kyc/bvn/verify";
     
             
-            $response = $client->request('POST', $url, [
+            $response2 = $client->request('POST', $url, [
                 'form_params' => [
                     'bvn' => $bvn,
                     'selfie_image' => $selfie_image
                 ]
             ]);
           
-            $statusCode = $response->getStatusCode();
-            $decodedJson = json_decode($response->getBody(), TRUE);
+            $statusCode = $response2->getStatusCode();
+            $decodedJson = json_decode($response2->getBody(), TRUE);
             Log::info("*****************BVN SELFIE******************************");
             Log::info("Request Image => " . $selfie_image);
             Log::info("Response Image => " . $decodedJson['entity']['image']);
             if ($statusCode === 200) {
-                $response = [
-                    'isSuccesful' =>  false,
-                    'responseCode' => null,
-                    'data'=> null,
-                    'message' => null,
-                ];
+                
                 $response['responseCode'] = '0';
                 $response['message'] = "Verification Successful";
                 $response['isSuccesful'] = true;
@@ -69,12 +69,6 @@ class ValidateSelfieController extends Controller
                     
                 // ],200);
             }
-            $response = [
-                'isSuccesful' =>  false,
-                'responseCode' => null,
-                'data'=> null,
-                'message' => null,
-            ];
             $response['responseCode'] = '0';
             $response['message'] = "Verification Successful";
             $response['isSuccesful'] = true;
@@ -126,15 +120,15 @@ class ValidateSelfieController extends Controller
             $url = "{$this->baseUrl2}/api/v1/kyc/nin/verify";
     
             
-            $response = $client->request('POST', $url, [
+            $response2 = $client->request('POST', $url, [
                 'form_params' => [
                     'nin' => $nin,
                     'selfie_image' => $selfie_image
                 ]
             ]);
           
-            $statusCode = $response->getStatusCode();
-            $decodedJson = json_decode($response->getBody(), TRUE);
+            $statusCode = $response2->getStatusCode();
+            $decodedJson = json_decode($response2->getBody(), TRUE);
             Log::info("*****************NIN SELFIE******************************");
             Log::info("Request Image => " . $selfie_image);
             Log::info("Response Image => " . $decodedJson['entity']['picture']);
