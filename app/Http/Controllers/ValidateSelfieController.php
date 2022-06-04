@@ -20,12 +20,7 @@ class ValidateSelfieController extends Controller
     public function BvnSelfie(SelfieRequest $request)
     {
         try {
-            $response = [
-                'isSuccesful' =>  false,
-                'responseCode' => null,
-                'data'=> null,
-                'message' => null,
-            ];
+          
             // Log::info('********** National Passport Verification from IdentityPass Service *************');
             Log::info($request->all());
             $headers = [
@@ -55,6 +50,12 @@ class ValidateSelfieController extends Controller
             Log::info("Request Image => " . $selfie_image);
             Log::info("Response Image => " . $decodedJson['entity']['image']);
             if ($statusCode === 200) {
+                $response = [
+                    'isSuccesful' =>  false,
+                    'responseCode' => null,
+                    'data'=> null,
+                    'message' => null,
+                ];
                 $response['responseCode'] = '0';
                 $response['message'] = "Verification Successful";
                 $response['isSuccesful'] = true;
@@ -68,6 +69,12 @@ class ValidateSelfieController extends Controller
                     
                 // ],200);
             }
+            $response = [
+                'isSuccesful' =>  false,
+                'responseCode' => null,
+                'data'=> null,
+                'message' => null,
+            ];
             $response['responseCode'] = '0';
             $response['message'] = "Verification Successful";
             $response['isSuccesful'] = true;
