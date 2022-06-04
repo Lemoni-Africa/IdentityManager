@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\Log;
 
 class ValidateCardsController extends Controller
 {
-    // 'https://api.dojah.io/api/v1/kyc/dl?license_number=wwww&dob=1992-02-12'
     private $baseUrl;
     private $baseUrl2;
+    private $environment;
     public function __construct()
     {
         $this->baseUrl = env('BASE_URL');
         $this->baseUrl2 = env('BASE_URL2');
+        $this->environment = env('VERIFICATION_ENV');
     }
         /**
      * Store a newly created resource in storage.
@@ -44,6 +45,11 @@ class ValidateCardsController extends Controller
                     ];
                     Log::info('********** Drivers License Verification from IdentityPass Service *************');
                     Log::info($request->all());
+                    if ($this->environment === "TEST") {
+                        $request->number = "AAD23208212298";
+                        $request->lastName = "test";
+                        $request->dob = "1999-12-21";
+                    }
                     $checker = $this->checkIfLicenseExists($request->number);
                     if(!empty($checker)){
                         //check expiry date 
@@ -156,18 +162,18 @@ class ValidateCardsController extends Controller
                     //     'data' => new DriversLicenseResource($newDriversLicense) 
                     // ],200);
                 }
-                    $response['responseCode'] = '0';
-                    $response['message'] =  $decodedJson['detail'];
-                    $response['isSuccesful'] = true;
-                    $response['data'] = $decodedJson['message'];
-                    Log::info('response gotten ' .json_encode($response));
-                    return response()->json($response, 400);
-                    // return response([
-                    //     'isSuccesful' => true,
-                    //     'message' => $decodedJson['detail'],
-                    //     'data' => $decodedJson['message']
-                    
-                    // ], 200);
+                $response['responseCode'] = '1';
+                $response['message'] =  $decodedJson['detail'];
+                $response['isSuccesful'] = false;
+                $response['data'] = $decodedJson['message'];
+                Log::info('response gotten ' .json_encode($response));
+                return response()->json($response, 400);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => $decodedJson['detail'],
+                //     'data' => $decodedJson['message']
+                
+                // ], 200);
                 } catch (\Exception $e) {
                     Log::info(json_encode($e));
                     return response([
@@ -190,6 +196,11 @@ class ValidateCardsController extends Controller
                     ];
                     Log::info('********** Voters Card Verification from IdentityPass Service *************');
                     Log::info($request->all());
+                    if ($this->environment === "TEST") {
+                        $request->number = "987f545AJ67890";
+                        $request->last_name = "test";
+                        $request->state = "Lagos";
+                    }
                     $checker = $this->checkIfVotersCardExists($request->number);
                     if(!empty($checker)){
                         $isLastNameMatching = compareText($request->last_name, $checker['last_name']);
@@ -271,9 +282,9 @@ class ValidateCardsController extends Controller
                         //     'data' => new VotersCardResource($newVotersCard)
                         // ],200);
                     }
-                    $response['responseCode'] = '0';
+                    $response['responseCode'] = '1';
                     $response['message'] =  $decodedJson['detail'];
-                    $response['isSuccesful'] = true;
+                    $response['isSuccesful'] = false;
                     $response['data'] = $decodedJson['message'];
                     Log::info('response gotten ' .json_encode($response));
                     return response()->json($response, 400);
@@ -304,6 +315,10 @@ class ValidateCardsController extends Controller
                     ];
                     Log::info('********** NIN Verification from IdentityPass Service *************');
                     Log::info($request->all());
+                    if ($this->environment === "TEST") {
+                        $request->number = "12345678909";
+                        $request->last_name = "test";
+                    }
                     $checker = $this->checkIfNinExists($request->number);
                     if(!empty($checker)){
                         $isLastNameMatching = compareText($request->last_name, $checker['surname']);
@@ -391,10 +406,10 @@ class ValidateCardsController extends Controller
                     }
                     $response['responseCode'] = '1';
                     $response['message'] = $decodedJson['detail'];
-                    $response['isSuccesful'] = true;
+                    $response['isSuccesful'] = false;
                     $response['data'] = $decodedJson['message'];
                     Log::info('response gotten ' .json_encode($response));
-                    return response()->json($response, 200);
+                    return response()->json($response, 400);
                     // return response([
                     //     'isSuccesful' => true,
                     //     'message' => $decodedJson['detail'],
@@ -420,6 +435,12 @@ class ValidateCardsController extends Controller
                     ];
                     Log::info('********** National Passport Verification from IdentityPass Service *************');
                     Log::info($request->all());
+                    if ($this->environment === "TEST") {
+                        $request->number = "A123456788";
+                        $request->first_name = "test";
+                        $request->last_name = "test";
+                        $request->dob = "1998-12-12";
+                    }
                     $checker = $this->checkIfNationalPassportsExists($request->number);
                     if(!empty($checker)){
                         //check expiry date 
@@ -461,16 +482,16 @@ class ValidateCardsController extends Controller
                         }
                         $response['responseCode'] = '0';
                         $response['message'] =  "DL Verification Successful";
-                        $response['isSuccesful'] = false;
+                        $response['isSuccesful'] = true;
                         $response['data'] = new NationalPassportResource($checker);
                         Log::info('response gotten ' .json_encode($response));
                         return response()->json($response, 200);
-                        return  response([
-                            'isSuccesful' => true,
-                            'message' => "DL Verification Successful",
-                            'data' =>  new NationalPassportResource($checker)
+                        // return  response([
+                        //     'isSuccesful' => true,
+                        //     'message' => "DL Verification Successful",
+                        //     'data' =>  new NationalPassportResource($checker)
                         
-                        ], 200);
+                        // ], 200);
                     }
                     $headers = [
                         'Content-Type' => 'application/json',
@@ -516,10 +537,10 @@ class ValidateCardsController extends Controller
                         if ($isExpired) {
                             $response['responseCode'] = '1';
                             $response['message'] = "DL Verification Successful";
-                            $response['isSuccesful'] = true;
+                            $response['isSuccesful'] = false;
                             $response['data'] = "License Expired at " . $newPassport->expiry_date;
                             Log::info('response gotten ' .json_encode($response));
-                            return response()->json($response, 200);
+                            return response()->json($response, 400);
                             // return  response([
                             //     'isSuccesful' => true,
                             //     'message' => "DL Verification Successful",
@@ -548,10 +569,10 @@ class ValidateCardsController extends Controller
                     }
                     $response['responseCode'] = '1';
                     $response['message'] = $decodedJson['detail'];
-                    $response['isSuccesful'] = true;
+                    $response['isSuccesful'] = false;
                     $response['data'] = $decodedJson['message'];
                     Log::info('response gotten ' .json_encode($response));
-                    return response()->json($response, 200);
+                    return response()->json($response, 400);
                     // return response([
                     //     'isSuccesful' => true,
                     //     'message' => $decodedJson['detail'],

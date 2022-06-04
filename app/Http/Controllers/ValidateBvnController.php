@@ -14,10 +14,12 @@ class ValidateBvnController extends Controller
 {
     private $baseUrl;
     private $baseUrl2;
+    private $environment;
     public function __construct()
     {
         $this->baseUrl = env('BASE_URL');
         $this->baseUrl2 = env('BASE_URL2');
+        $this->environment = env('VERIFICATION_ENV');
     }
         /**
      * Store a newly created resource in storage.
@@ -36,6 +38,12 @@ class ValidateBvnController extends Controller
             ];
             Log::info('********** BVN Verification from IdentityPass Service *************');
             Log::info($request->all());
+            if ($this->environment === "TEST") {
+                $request->number = "54651333608";
+                $request->lastName = "testing";
+                $request->dob = "1999-12-21";
+            }
+            // Log::info($request->lastName);
             $checker = $this->checkIfBvnExists($request->number);
         if(!empty($checker)){
             // compare text
@@ -138,9 +146,9 @@ class ValidateBvnController extends Controller
             //     'data' => new BvnResource($newBvn) 
             // ]);
         }
-        $response['responseCode'] = '0';
+        $response['responseCode'] = '1';
         $response['message'] = $decodedJson['detail'];
-        $response['isSuccesful'] = true;
+        $response['isSuccesful'] = false;
         $response['data'] = $decodedJson['message'] ;
         Log::info('response gotten ' .json_encode($response));
         return response()->json($response, 200);

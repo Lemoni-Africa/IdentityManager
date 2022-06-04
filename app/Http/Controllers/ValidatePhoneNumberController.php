@@ -12,10 +12,12 @@ use Illuminate\Support\Facades\Log;
 class ValidatePhoneNumberController extends Controller
 {
     private $baseUrl2;
+    private $environment;
     public function __construct()
     {
         $this->baseUrl = env('BASE_URL');
         $this->baseUrl2 = env('BASE_URL2');
+        $this->environment = env('VERIFICATION_ENV');
     }
     public function store(PhoneNumberRequest $request)
     {
@@ -28,6 +30,11 @@ class ValidatePhoneNumberController extends Controller
             ];
             Log::info('********** Phone Number Verification from IdentityPass Service *************');
             Log::info($request->all());
+            if ($this->environment === "TEST") {
+                $request->number = "08082838283";
+                // $request->lastName = "testing";
+                // $request->dob = "1999-12-21";
+            }
             $checker = $this->checkIfPhoneExists($request->number);
         if(!empty($checker)){
             $response['responseCode'] = '0';
@@ -61,6 +68,7 @@ class ValidatePhoneNumberController extends Controller
             ]
         ]);
         $decodedJson = json_decode($response2->getBody(), TRUE);
+        // Log::info($decodedJson);
         if ($decodedJson['response_code'] === "00") {
 
             $newPhoneNumber = new PhoneNumber;
@@ -130,12 +138,12 @@ class ValidatePhoneNumberController extends Controller
             //     'data' => $decodedJson['data']
             // ],200);
         }
-        $response['responseCode'] = '0';
+        $response['responseCode'] = '1';
         $response['message'] = $decodedJson['detail'];
-        $response['isSuccesful'] = true;
+        $response['isSuccesful'] = false;
         $response['data'] = $decodedJson['message'];
         Log::info('response gotten ' .json_encode($response));
-        return response()->json($response, 200);
+        return response()->json($response, 400);
         // return response([
         //     'isSuccesful' => true,
         //     'message' => $decodedJson['detail'],
@@ -217,6 +225,7 @@ class ValidatePhoneNumberController extends Controller
             ]
         ]);
         $decodedJson = json_decode($response2->getBody(), TRUE);
+        Log::info($decodedJson);
         if ($decodedJson['response_code'] === "00") {
             savePhoneNumber($decodedJson);
             $isLastNameMatching = compareText($lastName, $decodedJson['data']['surname']);
