@@ -32,6 +32,7 @@ class SmsController extends Controller
     public function createSms(SmsRequest $request)
     {
         try {
+            Log::info($request->all());
             $response = [
                 'isSuccess' =>  false,
                 'responseCode' => null,
@@ -43,7 +44,7 @@ class SmsController extends Controller
             $from = $request->from;
             foreach ($to as $value) {
                 $message = $this->send_message($value, $body);
-                // Log::info($message);
+                Log::info($message);
            
                 $decodeMesaage = json_decode($message);
                 $sms = new Sms();
