@@ -7,6 +7,7 @@ use App\Models\Nin;
 use App\Models\PhoneNumber;
 use App\Models\VotersCard;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 function checkExpiryDate($date)
 {
@@ -25,7 +26,7 @@ function compareText($firstText, $secondText)
     } else{
         return false;
     }
-    
+
 }
 
 function saveBvn($decodedJson)
@@ -99,7 +100,7 @@ function saveBvn2($decodedJson)
 
 function savePhoneNumber($decodedJson)
 {
-    
+
     $newPhoneNumber = new PhoneNumber;
     $newPhoneNumber->nin = $decodedJson['data']['nin'];
     $newPhoneNumber->firstname = $decodedJson['data']['firstname'];
@@ -158,7 +159,7 @@ function savePhoneNumber($decodedJson)
 
 function savePhoneNumber2($decodedJson)
 {
-    
+
     $newPhoneNumber = new PhoneNumber;
     $newPhoneNumber->nin = $decodedJson['entity']['nin'];
     $newPhoneNumber->firstname = $decodedJson['entity']['firstName'];
@@ -172,7 +173,7 @@ function savePhoneNumber2($decodedJson)
     $newPhoneNumber->height = $decodedJson['entity']['height'];
     // $newPhoneNumber->email = $decodedJson['entity']['email'] || '';
     $newPhoneNumber->birthdate = date('Y-m-d',strtotime($decodedJson['entity']['birthDate']));
-    
+
 
     $newPhoneNumber->birthlga = $decodedJson['entity']['birthLga'];
 
@@ -447,7 +448,7 @@ function createSms($baseUrl, $key, $from, $body, $to)
 
     return Http::withHeaders([
         'Accept' => 'application/json',
-    ])->get($url, [ 
+    ])->get($url, [
         'api_token'=> $key,
         'to'=> $to,
         'from'=> $from,
@@ -463,8 +464,91 @@ function createSms($baseUrl, $key, $from, $body, $to)
 function getPrices($baseUrl, $currency, $page, $perPage)
 {
     $url = "{$baseUrl}/api/v3/coins/markets?vs_currency={$currency}&page={$page}&per_page={$perPage}";
-    
+
     return Http::withHeaders([
         // 'Authorization' => $header[0]
     ])->get($url);
 }
+
+function httpGetDojah($url)
+{
+    return Http::withHeaders([
+        'Content-Type' => 'application/json',
+        'Authorization' => env('AUTHKEY'),
+        'AppId' => env('APPID')
+    ])->get($url);
+}
+
+function dojahBvn($request, $baseUrl)
+{
+    // $headers = [
+    //     'Content-Type' => 'application/json',
+    //     'Authorization' => env('AUTHKEY'),
+    //     'AppId' => env('APPID')
+    // ];
+    $url = "{$baseUrl}/api/v1/kyc/bvn/full?bvn={$request->number}";
+    return httpGetDojah($url);
+}
+
+function dojahNumber($request, $baseUrl)
+{
+    $url = "{$baseUrl}/api/v1/kyc/phone_number?phone_number={$request->number}";
+    return httpGetDojah($url);
+
+}
+
+function dojahDriverLicense($baseUrl, $number, $dob)
+{
+    $url = "{$baseUrl}/api/v1/kyc/dl?license_number={$number}&dob={$dob}";
+    return httpGetDojah($url);
+
+}
+
+function dojahVotersCard($baseUrl, $number, $state,$last_name)
+{
+    $url = "{$baseUrl}/api/v1/kyc/vin?mode=vin&vin={$number}&state={$state}&lastname={$last_name}";
+    return httpGetDojah($url);
+
+}
+
+function dojahNin($baseUrl, $number)
+{
+    $url = "{$baseUrl}/api/v1/kyc/nin?nin={$number}";
+    return httpGetDojah($url);
+
+}
+
+function httpPostRequest($url, $body)
+{
+    // Log::info($auth);
+    $data = Http::withHeaders([
+        'Content-Type' => 'application/json',
+        'Authorization' => env('AUTHKEY'),
+        'AppId' => env('APPID')
+    ])->post($url, $body);
+
+    return $data;
+}
+
+function bvnSelfieDojah($bvn, $selfie_image, $baseUrl)
+{
+    $body = [
+        'bvn' => $bvn,
+        'selfie_image' => $selfie_image
+    ];
+    $url = "{$baseUrl}/api/v1/kyc/bvn/verify";
+
+    return httpPostRequest($url, $body);
+}
+
+function NinSelfieDojah($nin, $selfie_image, $baseUrl)
+{
+    $body = [
+        'nin' => $nin,
+        'selfie_image' => $selfie_image
+    ];
+    $url = "{$baseUrl}/api/v1/kyc/nin/verify";
+
+    return httpPostRequest($url, $body);
+}
+

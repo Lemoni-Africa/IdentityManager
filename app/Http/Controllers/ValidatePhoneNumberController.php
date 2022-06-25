@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Contract\Responses\DefaultApiResponse;
 use App\Http\Requests\PhoneNumberLastNameRequest;
 use App\Http\Requests\PhoneNumberRequest;
 use App\Models\PhoneNumber;
@@ -13,11 +14,13 @@ class ValidatePhoneNumberController extends Controller
 {
     private $baseUrl2;
     private $environment;
+    private $response;
     public function __construct()
     {
         $this->baseUrl = env('BASE_URL');
         $this->baseUrl2 = env('BASE_URL2');
         $this->environment = env('VERIFICATION_ENV');
+        $this->response = new DefaultApiResponse();
     }
     public function store(PhoneNumberRequest $request)
     {
@@ -47,7 +50,7 @@ class ValidatePhoneNumberController extends Controller
             //     'isSuccesful' => true,
             //     'message' => "Verification Successful",
             //     'data' => $checker
-            
+
             // ], 200);
         }
         $headers = [
@@ -125,7 +128,7 @@ class ValidatePhoneNumberController extends Controller
 
             $newPhoneNumber->save();
 
-  
+
             $response['responseCode'] = '0';
             $response['message'] = $decodedJson['detail'];
             $response['isSuccesful'] = true;
@@ -148,7 +151,7 @@ class ValidatePhoneNumberController extends Controller
         //     'isSuccesful' => true,
         //     'message' => $decodedJson['detail'],
         //     'data' => $decodedJson['message']
-        
+
         // ], 200);
         } catch (\Exception $e) {
             Log::info(json_encode($e));
@@ -156,11 +159,11 @@ class ValidatePhoneNumberController extends Controller
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',
                 'error' => $e
-            
+
             ], 500);
         }
-        
-      
+
+
     }
 
 
@@ -202,7 +205,7 @@ class ValidatePhoneNumberController extends Controller
             //     'isSuccesful' => true,
             //     'message' => "Verification Successful",
             //     'data' => $checker
-            
+
             // ], 200);
         }
         $headers = [
@@ -264,7 +267,7 @@ class ValidatePhoneNumberController extends Controller
         //     'isSuccesful' => true,
         //     'message' => $decodedJson['detail'],
         //     'data' => $decodedJson['message']
-        
+
         // ], 200);
 
         } catch (\Exception $e) {
@@ -273,63 +276,67 @@ class ValidatePhoneNumberController extends Controller
                 'isSuccesful' => false,
                 'message' => 'Processing Failed, Contact Support',
                 'error' => $e
-            
+
             ], 500);
         }
-        
+
     }
 
 
     public function DojaStore(PhoneNumberRequest $request)
     {
         try {
+            Log::info('********** Phone Number Verification from Dojah Service *************');
+            Log::info($request->all());
+            if ($this->environment === "TEST") {
+                $request->number = "08082838283";
+                // $request->lastName = "testing";
+                // $request->dob = "1999-12-21";
+            }
             $checker = $this->checkIfPhoneExists($request->number);
             if(!empty($checker)){
-                return  response([
-                    'isSuccesful' => true,
-                    'message' => "Verification Successful",
-                    'data' => $checker
-                
-                ], 200);
-            }
-            $headers = [
-                'Content-Type' => 'application/json',
-                'Authorization' => env('AUTHKEY'),
-                'AppId' => env('APPID')
-            ];
-            $client = new Client([
-                'headers' => $headers
-            ]);
-            $url = "{$this->baseUrl2}/api/v1/kyc/phone_number?phone_number={$request->number}";
-            // $number = $request->number;
-            $response = $client->request('GET', $url, [
-               
-            ]);
+                $this->response->responseCode = '0';
+                $this->response->message = "Verification Successful";
+                $this->response->isSuccessful = true;
+                $this->response->data = $checker;
+                Log::info('response gotten ' .json_encode($this->response));
+                return response()->json($this->response, 200);
+                // return  response([
+                //     'isSuccesful' => true,
+                //     'message' => "Verification Successful",
+                //     'data' => $checker
 
-            $statusCode = $response->getStatusCode();
-            $decodedJson = json_decode($response->getBody(), TRUE);
-            
-            if ($statusCode === 200) {
-                $newPhoneNumber = savePhoneNumber2($decodedJson);
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Verification Successful",
-                    'data' => $newPhoneNumber
-                ]);
+                // ], 200);
             }
-            return response([
-                'isSuccesful' => true,
-                'message' => "Verification failed",
-                'data' => "Record not Found"
-            
-            ], 200);
+            $decodedJson = dojahNumber($request, $this->baseUrl2);
+            Log::info('response gotten from dojah  '. $decodedJson);
+            if ($decodedJson->successful()) {
+                $newPhoneNumber = savePhoneNumber2($decodedJson);
+                $this->response->responseCode = '0';
+                $this->response->message = "Verification Successful";
+                $this->response->isSuccessful = true;
+                $this->response->data = $newPhoneNumber;
+                Log::info('response gotten ' .json_encode($this->response));
+                return response()->json($this->response, 200);
+                // return response([
+                //     'isSuccesful' => true,
+                //     'message' => "Verification Successful",
+                //     'data' => $newPhoneNumber
+                // ]);
+            }
+            $this->response->responseCode = '1';
+            $this->response->message = "Verification Failed";
+            $this->response->isSuccessful = false;
+            $this->response->data = "Record not Found";
+            Log::info('response gotten ' .json_encode($this->response));
+            return response()->json($this->response, 400);
         } catch (\Exception $e) {
-            return response([
-                'isSuccesful' => false,
-                'message' => 'Processing Failed, Contact Support',
-                'error' => $e->getMessage()
-            
-            ], 500);
+            $this->response->responseCode = '1';
+            $this->response->message = "Processing Failed, Contact Support";
+            $this->response->isSuccessful = false;
+            $this->response->error = $e->getMessage();
+            Log::info('response gotten ' .json_encode($this->response));
+            return response()->json($this->response, 500);
         }
     }
 
@@ -337,79 +344,76 @@ class ValidatePhoneNumberController extends Controller
     public function DojaNumber(PhoneNumberLastNameRequest $request)
     {
         try {
+            Log::info('********** Phone Number Verification from Dojah Service *************');
+            Log::info($request->all());
+            if ($this->environment === "TEST") {
+                $request->number = "08082838283";
+                $request->lastName = "test";
+                // $request->dob = "1999-12-21";
+            }
             $checker = $this->checkIfPhoneExists($request->number);
             if(!empty($checker)){
                 $isLastNameMatching = compareText($request->lastName, $checker['surname']);
                 $isFirstNameMatching = compareText($request->lastName, $checker['firstname']);
                 if (!($isLastNameMatching || $isFirstNameMatching)) {
-
-                    return response([
-                        'isSuccesful' => true,
-                        'message' => "Name doesn't Match",
-                        // 'data' => $decodedJson['bvn_data']
-                    ]);
+                    $this->response->responseCode = '1';
+                    $this->response->message = "Name doesn't Match";
+                    $this->response->isSuccessful = false;
+                    Log::info('response gotten ' .json_encode($this->response));
+                    return response()->json($this->response, 400);
                 }
-                return  response([
-                    'isSuccesful' => true,
-                    'message' => "Verification Successful",
-                    'data' => $checker
-                
-                ], 200);
+                $this->response->responseCode = '0';
+                $this->response->message = "Verification Successful";
+                $this->response->isSuccessful = true;
+                $this->response->data = $checker;
+                Log::info('response gotten ' .json_encode($this->response));
+                return response()->json($this->response, 200);
             }
-            $headers = [
-                'Content-Type' => 'application/json',
-                'Authorization' => env('AUTHKEY'),
-                'AppId' => env('APPID')
-            ];
-            $client = new Client([
-                'headers' => $headers
-            ]);
-            $url = "{$this->baseUrl2}/api/v1/kyc/phone_number?phone_number={$request->number}";
             $number = $request->number;
             $lastName = $request->lastName;
-
-            $response = $client->request('GET', $url, [
-               
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            $decodedJson = json_decode($response->getBody(), TRUE);
-
-            
-            if ($statusCode === 200) {
+            $decodedJson = dojahNumber($request, $this->baseUrl2);
+            Log::info('data gotten from dojah  ' . $decodedJson);
+            // return;
+            if ($decodedJson->successful()) {
                 $newPhoneNumber = savePhoneNumber2($decodedJson);
                 $isLastNameMatching = compareText($lastName, $decodedJson['entity']['lastName']);
                 $isFirstNameMatching = compareText($lastName, $decodedJson['entity']['firstName']);
                 if (!($isLastNameMatching || $isFirstNameMatching)) {
-                    return response([
-                        'isSuccesful' => true,
-                        'message' => "Name doesn't Match",
-                    ]);
+                    $this->response->responseCode = '1';
+                    $this->response->message = "Name doesn't Match";
+                    $this->response->isSuccessful = false;
+                    Log::info('response gotten ' .json_encode($this->response));
+                    return response()->json($this->response, 400);
+                    // return response([
+                    //     'isSuccesful' => true,
+                    //     'message' => "Name doesn't Match",
+                    // ]);
                 }
                 // return response([
                 //     'isSuccesful' => true,
                 //     'message' => $decodedJson['detail'],
                 //     'data' => $decodedJson['data']
                 // ],200);
-                return response([
-                    'isSuccesful' => true,
-                    'message' => "Verification Successful",
-                    'data' => $newPhoneNumber
-                ]);
+                $this->response->responseCode = '0';
+                $this->response->message = 'Verification Successful';
+                $this->response->isSuccessful = true;
+                $this->response->data =  $newPhoneNumber;
+                Log::info('response gotten ' .json_encode($this->response));
+                return response()->json($this->response, 200);
             }
-            return response([
-                'isSuccesful' => true,
-                'message' => "Verification failed",
-                'data' => "Record not Found"
-            
-            ], 200);
+            $this->response->responseCode = '1';
+            $this->response->message = "Verification Failed";
+            $this->response->isSuccessful = false;
+            $this->response->data = "Record not Found";
+            Log::info('response gotten ' .json_encode($this->response));
+            return response()->json($this->response, 400);
         } catch (\Exception $e) {
-            return response([
-                'isSuccesful' => false,
-                'message' => 'Processing Failed, Contact Support',
-                'error' => $e->getMessage()
-            
-            ], 500);
+            $this->response->responseCode = '1';
+            $this->response->message = "Processing Failed, Contact Support";
+            $this->response->isSuccessful = false;
+            $this->response->error = $e->getMessage();
+            Log::info('response gotten ' .json_encode($this->response));
+            return response()->json($this->response, 500);
         }
     }
 
