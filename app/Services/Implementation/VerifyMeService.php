@@ -146,10 +146,12 @@ class VerifyMeService implements IVerifyMeService
     {
         Log::info('********** NIN Verification from VerifyMe Service *************');
         Log::info($request->all());
-        // if ($this->environment === "TEST") {
-        //     $request->number = "10000080071";
-        //     $request->last_name = "test";
-        // }
+        if ($this->environment === "TEST") {
+            $request->number = "10000000001";
+            $request->last_name = "John";
+            $request->dob = "1944-04-04";
+            $request->first_name = "test";
+        }
         $checker = $this->checkIfNinExists($request->number);
         if(!empty($checker)){
             $isLastNameMatching = compareText($request->last_name, $checker['surname']);
@@ -204,11 +206,13 @@ class VerifyMeService implements IVerifyMeService
     {
         Log::info('********** Voters Card Verification from verifyMe Service *************');
         Log::info($request->all());
-        // if ($this->environment === "TEST") {
-        //     $request->number = "987f545AJ67890";
-        //     $request->last_name = "test";
-        //     $request->state = "Lagos";
-        // }
+        if ($this->environment === "TEST") {
+            $request->number = "987f545AJ67890";
+            $request->last_name = "test";
+            $request->state = "Lagos";
+            $request->first_name = "test";
+            $request->dob = "1944-04-04";
+        }
         $checker = $this->checkIfVotersCardExists($request->number);
         if(!empty($checker)){ 
             $isLastNameMatching = compareText($request->last_name, $checker['last_name']);
@@ -262,11 +266,12 @@ class VerifyMeService implements IVerifyMeService
     {
         Log::info('********** Drivers License Verification from verifyMe Service *************');
         Log::info($request->all());
-        // if ($this->environment === "TEST") {
-        //     $request->number = "AAD23208212298";
-        //     $request->lastName = "test";
-        //     $request->dob = "1999-12-21";
-        // }
+        if ($this->environment === "TEST") {
+            $request->number = "10000000001";
+            $request->last_name = "Doe";
+            $request->dob = "1992-03-08";
+            $request->first_name = "John";
+        }
         $checker = $this->checkIfLicenseExists($request->number);
         if(!empty($checker)){
             //check expiry date

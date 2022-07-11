@@ -1144,6 +1144,14 @@ class ValidateCardsController extends Controller
                     return response()->json($this->response, 500);
                 }
             break;
+            case 'PASSPORT':
+                $this->response->responseCode = '1';
+                $this->response->message = "Processing Failed, Contact Support";
+                $this->response->isSuccessful = false;
+                // $this->response->error = $e->getMessage();
+                Log::info('response gotten ' .json_encode($this->response));
+                return response()->json($this->response, 500);
+            break;
         }
     }
 

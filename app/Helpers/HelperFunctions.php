@@ -762,16 +762,3 @@ function driversLicenseVerifyMe($request, $baseUrl)
     $url = "{$baseUrl}/api/v1/validate/license-number";
     return httpPostRequestVerifyMe($url, $body);
 }
-// {
-//     "ref": "10000000001",
-//     "firstName": "John",
-//     "lastName": "Doe",
-//     "dob" : "04-04-1944"
-//   }
-
-// {
-//     "number": "987f545AJ67890",
-//     "type": "VTRCARD",
-//     "last_name": "test",
-//     "state": "Lagos"
-// }
