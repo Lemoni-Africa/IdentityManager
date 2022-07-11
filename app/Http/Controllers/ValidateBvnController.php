@@ -6,7 +6,9 @@ use App\Contract\Responses\DefaultApiResponse;
 use App\Http\Requests\BvnRequest;
 use App\Http\Resources\BvnResource;
 use App\Models\Bvn;
+use App\Services\Interfaces\IVerifyMeService;
 use GuzzleHttp\Client;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use phpDocumentor\Reflection\PseudoTypes\LowercaseString;
@@ -17,12 +19,14 @@ class ValidateBvnController extends Controller
     private $baseUrl2;
     private $environment;
     private $response;
-    public function __construct()
+    public IVerifyMeService $verifyMeService;
+    public function __construct(IVerifyMeService $service)
     {
         $this->baseUrl = env('BASE_URL');
         $this->baseUrl2 = env('BASE_URL2');
         $this->environment = env('VERIFICATION_ENV');
         $this->response = new DefaultApiResponse();
+        $this->verifyMeService = $service;
     }
         /**
      * Store a newly created resource in storage.
@@ -263,6 +267,24 @@ class ValidateBvnController extends Controller
     }
 
 
+    public function verifyMeStore(BvnRequest $request): JsonResponse
+    {
+        try {
+            $response = $this->verifyMeService->validateBvn($request);
+            if ($response->isSuccessful) {
+                return response()->json($response, 200);
+            }
+            return response()->json($response, 400);
+        } catch (\Exception $e) {
+            Log::info(json_encode($e));
+            $this->response->responseCode = '1';
+            $this->response->message = "Processing Failed, Contact Support";
+            $this->response->isSuccessful = false;
+            $this->response->error = $e->getMessage();
+            Log::info('response gotten ' .json_encode($this->response));
+            return response()->json($this->response, 500);
+        }
+    }
 
 
 

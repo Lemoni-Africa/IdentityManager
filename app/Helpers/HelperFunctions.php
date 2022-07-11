@@ -97,6 +97,40 @@ function saveBvn2($decodedJson)
     return $newBvn;
 }
 
+function saveBvn3($decodedJson, $request)
+{
+    $newBvn = new Bvn;
+    $newBvn->firstName = $decodedJson['validationResponse']['firstName'];
+    $newBvn->middleName = $decodedJson['validationResponse']['middleName'];
+    $newBvn->lastName = $decodedJson['validationResponse']['lastName'];
+    $newBvn->dateOfBirth = date('Y-m-d',strtotime($decodedJson['validationResponse']['dateOfBirth']));
+    $newBvn->phoneNumber1 = $decodedJson['validationResponse']['phoneNumber'];
+    $newBvn->phoneNumber2 = '';
+    $newBvn->registrationDate = '';
+    $newBvn->enrollmentBank = '';
+    $newBvn->enrollmentBranch = '';
+    $newBvn->email = '';
+    $newBvn->gender = '';
+    $newBvn->levelOfAccount = '';
+    $newBvn->lgaOfOrigin = '';
+    $newBvn->lgaOfResidence = '';
+    $newBvn->maritalStatus = '';
+    $newBvn->nin = '';
+    $newBvn->nameOnCard = '';
+    $newBvn->nationality = '';
+    $newBvn->residentialAddress = '';
+    $newBvn->stateOfOrigin = '';
+    $newBvn->stateOfResidence = '';
+    $newBvn->title = '';
+    $newBvn->watchListed = '';
+    $newBvn->bvn = $request->number;
+    $newBvn->base64Image = '';
+    $newBvn->provider = "verifyMe";
+    $newBvn->save();
+
+    return $newBvn;
+}
+
 
 function savePhoneNumber($decodedJson)
 {
@@ -230,15 +264,35 @@ function saveDriversLicence($decodedJson)
     $newLicense->firstName = $decodedJson['data']['firstName'];
     $newLicense->lastName = $decodedJson['data']['lastName'];
     $newLicense->middleName = $decodedJson['data']['middleName'];
-    $newLicense->issuedDate = $decodedJson['data']['issuedDate'];
-    $newLicense->expiryDate = $decodedJson['data']['expiryDate'];
+    $newLicense->issuedDate = date('Y-m-d',strtotime($decodedJson['data']['issuedDate']));
+    $newLicense->expiryDate = date('Y-m-d',strtotime($decodedJson['data']['expiryDate']));
     $newLicense->stateOfIssue = $decodedJson['data']['stateOfIssue'];
-    $newLicense->birthDate = $decodedJson['data']['birthDate'];
+    $newLicense->birthDate = date('Y-m-d',strtotime($decodedJson['data']['birthDate']));
     $newLicense->photo = $decodedJson['data']['photo'];
     $newLicense->provider = "identityPass";
     $newLicense->save();
     return $newLicense;
 }
+
+function saveDriversLicenceVerifyMe($decodedJson)
+{
+    $newLicense = new DriversLicense;
+    $newLicense->gender = $decodedJson['licenseValidationResponse']['data']['gender'];
+    $newLicense->licenseNo = $decodedJson['licenseValidationResponse']['data']['licenseNo'];
+    $newLicense->firstName = $decodedJson['licenseValidationResponse']['data']['firstname'];
+    $newLicense->lastName = $decodedJson['licenseValidationResponse']['data']['lastname'];
+    $newLicense->middleName = '';
+    $newLicense->issuedDate = date('Y-m-d',strtotime($decodedJson['licenseValidationResponse']['data']['issuedDate']));
+    $newLicense->expiryDate = date('Y-m-d',strtotime($decodedJson['licenseValidationResponse']['data']['expiryDate']));
+    $newLicense->stateOfIssue = $decodedJson['licenseValidationResponse']['data']['stateOfIssue'];
+    $newLicense->birthDate = date('Y-m-d',strtotime($decodedJson['licenseValidationResponse']['data']['birthdate']));
+    $newLicense->photo = $decodedJson['licenseValidationResponse']['data']['photo'];
+    $newLicense->provider = "verifyMe";
+    $newLicense->save();
+    return $newLicense;
+}
+
+
 
 function saveDriversLicence2($decodedJson)
 {
@@ -277,6 +331,28 @@ function saveVotersCard($decodedJson)
     $newVotersCard->pollingUnit = $decodedJson['vc_data']['pollingUnit'];
     $newVotersCard->pollingUnitCode = $decodedJson['vc_data']['pollingUnitCode'];
     $newVotersCard->provider = "identityPass";
+    $newVotersCard->save();
+
+    return $newVotersCard;
+}
+
+function saveVotersCardVerifyMe($decodedJson)
+{
+    $newVotersCard = new VotersCard;
+    $newVotersCard->gender = $decodedJson['votersCardValidationResponse']['data']['vender'] ?? '';
+    $newVotersCard->vin = $decodedJson['votersCardValidationResponse']['data']['vin'];
+    $newVotersCard->first_name = $decodedJson['votersCardValidationResponse']['data']['firstName'];
+    $newVotersCard->last_name = $decodedJson['votersCardValidationResponse']['data']['lastName'];
+    $newVotersCard->date_of_birth = '';
+    $newVotersCard->fullName = $decodedJson['votersCardValidationResponse']['data']['fullname'];
+    $newVotersCard->occupation = $decodedJson['votersCardValidationResponse']['data']['occupation'];
+    $newVotersCard->timeOfRegistration = '';
+    $newVotersCard->lga = '';
+    $newVotersCard->state = '';
+    $newVotersCard->registrationAreaWard = '';
+    $newVotersCard->pollingUnit = '';
+    $newVotersCard->pollingUnitCode = $decodedJson['votersCardValidationResponse']['data']['pollingUnitCode'];
+    $newVotersCard->provider = "verifyMe";
     $newVotersCard->save();
 
     return $newVotersCard;
@@ -357,6 +433,58 @@ function saveNin($decodedJson)
     return $newNin;
 }
 
+
+function saveNinVerifyMe($decodedJson, $request)
+{
+    $newNin = new Nin;
+    $newNin->employmentstatus = '';
+    $newNin->gender = $decodedJson['ninValidationResponse']['data']['gender'];
+    $newNin->heigth = null;
+    $newNin->maritalstatus = '';
+    $newNin->title = '';
+    $newNin->birthcountry = '';
+    $newNin->birthdate = date('Y-m-d',strtotime($decodedJson['ninValidationResponse']['data']['birthdate']));
+    $newNin->birthlga = '';
+    $newNin->birthstate = '';
+    $newNin->educationallevel = '';
+    $newNin->email = '';
+    $newNin->firstname = $decodedJson['ninValidationResponse']['data']['firstname'];
+    $newNin->surname = $decodedJson['ninValidationResponse']['data']['lastname'];
+    $newNin->nin = $request->number;
+    $newNin->nok_address1 = '';
+    $newNin->nok_address2 = '';
+    $newNin->nok_firstname = '';
+    $newNin->nok_lga = '';
+    $newNin->nok_middlename = '';
+    $newNin->nok_postalcode = '';
+    $newNin->nok_state = '';
+    $newNin->nok_surname = '';
+    $newNin->nok_town = '';
+    $newNin->spoken_language = '';
+    $newNin->ospokenlang = '';
+    $newNin->pfirstname = '';
+    $newNin->photo = $decodedJson['ninValidationResponse']['data']['photo'];
+    $newNin->middlename = '';
+    $newNin->pmiddlename = '';
+    $newNin->profession = '';
+    $newNin->psurname = '';
+    $newNin->religion = '';
+    $newNin->residence_address = '';
+    $newNin->residence_town = '';
+    $newNin->residence_lga = '';
+    $newNin->residence_state = '';
+    $newNin->residencestatus = '';
+    $newNin->self_origin_lga = '';
+    $newNin->self_origin_place = '';
+    $newNin->self_origin_state = '';
+    $newNin->signature = '';
+    $newNin->telephoneno = '';
+    $newNin->trackingId = '';
+    $newNin->provider = "verifyMe";
+    $newNin->save();
+
+    return $newNin;
+}
 
 function saveNin2($decodedJson)
 {
@@ -552,3 +680,98 @@ function NinSelfieDojah($nin, $selfie_image, $baseUrl)
     return httpPostRequest($url, $body);
 }
 
+function httpGetVerifyMe($url)
+{
+    return Http::withHeaders([
+        'Content-Type' => 'application/json',
+        // 'Authorization' => env('AUTHKEY'),
+        // 'AppId' => env('APPID')
+    ])->get($url);
+}
+
+
+function verifyMeBvn($request, $baseUrl)
+{
+    // $headers = [
+    //     'Content-Type' => 'application/json',
+    //     'Authorization' => env('AUTHKEY'),
+    //     'AppId' => env('APPID')
+    // ];
+    // /api/v1/validate/bvn/22153637218
+    $url = "{$baseUrl}/api/v1/validate/bvn/{$request->number}";
+    return httpGetVerifyMe($url);
+}
+
+
+function httpPostRequestVerifyMe($url, $body)
+{
+    // Log::info($auth);
+    $data = Http::withHeaders([
+        'Content-Type' => 'application/json',
+    ])->post($url, $body);
+
+    return $data;
+}
+
+function bvnSelfieVerifyMe($bvn, $selfie_image, $baseUrl)
+{
+    $body = [
+        "idType" => "bvn",
+        'idNumber' => $bvn,
+        'photoBase64' => $selfie_image
+    ];
+    $url = "{$baseUrl}/api/v1/validate/identity-biometric";
+    
+    return httpPostRequestVerifyMe($url, $body);
+}
+
+function ninVerifyMe($request, $baseUrl)
+{
+    $body = [
+        "ref" => $request->number,
+        'firstName' => $request->first_name,
+        'lastName' => $request->last_name,
+        'dob' => $request->dob
+    ];
+    $url = "{$baseUrl}/api/v1/validate/nin";
+    
+    return httpPostRequestVerifyMe($url, $body);
+}
+
+function votersCardVerifyMe($request, $baseUrl)
+{
+    $body = [
+        "ref" => $request->number,
+        'firstName' => $request->first_name,
+        'lastName' => $request->last_name,
+        'dob' => $request->dob
+    ];
+    $url = "{$baseUrl}/api/v1/validate/voters-card";
+    
+    return httpPostRequestVerifyMe($url, $body);
+}
+
+function driversLicenseVerifyMe($request, $baseUrl)
+{
+    $body = [
+        "ref" => $request->number,
+        'firstName' => $request->first_name,
+        'lastName' => $request->last_name,
+        'dob' => $request->dob
+    ];
+    $url = "{$baseUrl}/api/v1/validate/license-number";
+    return httpPostRequestVerifyMe($url, $body);
+}
+// {
+//     "ref": "10000000001",
+//     "firstName": "John",
+//     "lastName": "Doe",
+//     "dob" : "04-04-1944"
+//   }
+
+// {
+//     "number": "987f545AJ67890",
+//     "type": "VTRCARD",
+//     "last_name": "test",
+//     "state": "Lagos"
+// }

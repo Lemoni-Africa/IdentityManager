@@ -49,14 +49,19 @@ switch (env('provider')) {
         // Route::post('/validateNin', [ValidateNinController::class, 'store']);
         // Route::post('/validateNationalPassport', [ValidateNationalPassportController::class, 'store']);
         Route::post('/validateCards', [ValidateCardsController::class, 'DojahStore']);
+        Route::post('/validateBvnSelfie', [ValidateSelfieController::class, 'BvnSelfie']);
         break;
-
+    case 'VerifyMe':
+        Route::post('/validateBvn', [ValidateBvnController::class, 'verifyMeStore']);
+        Route::post('/validateBvnSelfie', [ValidateSelfieController::class, 'BvnVerifyMeSelfie']);
+        Route::post('/validateCards', [ValidateCardsController::class, 'verifyMeStore']);
+        break;
     default:
         # code...
         break;
 }
 
-Route::post('/validateBvnSelfie', [ValidateSelfieController::class, 'BvnSelfie']);
+
 Route::post('/validateNinSelfie', [ValidateSelfieController::class, 'NinSelfie']);
 Route::get('/livecoin', [LiveCoinController::class, 'getCoin']);
 

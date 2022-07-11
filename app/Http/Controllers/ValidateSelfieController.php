@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Contract\Responses\DefaultApiResponse;
 use App\Http\Requests\SelfieRequest;
+use App\Services\Interfaces\IVerifyMeService;
 use GuzzleHttp\Client;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -11,10 +14,13 @@ class ValidateSelfieController extends Controller
 {
     private $baseUrl;
     private $baseUrl2;
-    public function __construct()
+    public IVerifyMeService $verifyMeService;
+    public function __construct(IVerifyMeService $service)
     {
         $this->baseUrl = env('BASE_URL');
         $this->baseUrl2 = env('BASE_URL2');
+        $this->response = new DefaultApiResponse();
+        $this->verifyMeService = $service;
     }
     //
     public function BvnSelfie(SelfieRequest $request)
@@ -174,5 +180,25 @@ class ValidateSelfieController extends Controller
             ], 500);
         }
 
+    }
+  
+
+    public function BvnVerifyMeSelfie(SelfieRequest $request): JsonResponse
+    {
+        try {
+            $response = $this->verifyMeService->BvnSelfie($request);
+            if ($response->isSuccessful) {
+                return response()->json($response, 200);
+            }
+            return response()->json($response, 400);
+        } catch (\Exception $e) {
+            Log::info(json_encode($e));
+            $this->response->responseCode = '1';
+            $this->response->message = "Processing Failed, Contact Support";
+            $this->response->isSuccessful = false;
+            $this->response->error = $e->getMessage();
+            Log::info('response gotten ' .json_encode($this->response));
+            return response()->json($this->response, 500);
+        }
     }
 }
